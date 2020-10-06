@@ -1,0 +1,165 @@
+<html ng-app="myApp">
+    
+    <link rel="stylesheet" href="cart.css">
+
+    <head>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular-animate.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+
+        <title>AngularJS Presentation</title>
+    </head>
+  
+    <body class="container" ng-controller="myController">
+        <h1>Welcome to the Prit's Camping Store</h1>
+        
+        <br/>
+        
+        <!--Search filter bar-->
+        <h4>Filtering input: <input type="text" ng-model="searchText"></h4>
+    
+        <br/>
+
+        <!--Table 1 with contents-->
+        <div class="row">
+            <table class="table1">
+                <tr>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th class="qty">Qty</th>
+                    <th>Total</th>
+                </tr>
+        
+                <tr class="animate-repeat" ng-repeat="item in inventory | filter:searchText | orderBy:'category' ">
+
+                    <td>{{ item.category }}</td>
+
+                    <td>{{ item.description }}</td>
+
+                    <td ng-class="{ 'on-sale' : item.onSale }">{{ item.price | currency:'&#8377;' }}</td>
+
+                    <td><input class="qty" type="number" ng-model="item.qty"></td>
+
+                    <td>{{ item.qty * item.price | currency:'&#8377;' }}</td>
+
+                    <td><button class="btn-primary" ng-click="addItem(item)">Add to Cart</button></td>
+
+                </tr>
+
+            </table>
+        </div>
+    
+        <!--Billing table-->
+        <div class="row">
+            <h2>Your Cart:</h2>
+        
+            <ul>
+                <li class="animate-repeat" ng-repeat="item in cart | orderBy:'category'">
+                    
+                    <!--Billing desc-->
+                    <span>{{ item.qty + ' x ' + item.description + ' = ' + (getCost(item) | currency:'&#8377;') }}</span>
+
+                    <!--Delete-btn-->
+                    <button class="btn-semi-danger" ng-click="removeItem(item);">Remove Item</button>
+          
+                    </br>
+
+                </li>
+            </ul>
+
+            <h3>Total: {{ getTotal() | currency:'&#8377;' }}</h3>
+
+            <button class="btn-danger" ng-click="clearCart();">Clear Cart</button>
+        </div>
+    </body>
+
+    <!--AngularJS script & main logic-->
+    <script>
+
+        angular.module('myApp', ['ngAnimate']);
+
+        angular.module('myApp')
+        .controller('myController', function ($scope) {
+  
+            $scope.inventory = [
+                            { id :  1, category : "water bottle", description : "small water bottle",   price :   20.00, qty : 1 },
+                            { id :  2, category : "water bottle", description : "large water bottle",   price :   40.00, qty : 1, onSale : true },
+                            { id :  3, category : "flashlight",   description : "small flashlight",     price :   250.00, qty : 1 },
+                            { id :  4, category : "flashlight",   description : "big flashlight",       price :  325.00, qty : 1 },
+                            { id :  5, category : "stove",        description : "small stove",          price :  1999.99, qty : 1 },
+                            { id :  6, category : "stove",        description : "big stove",            price :  2999.99, qty : 1 },
+                            { id :  7, category : "sleeping bag", description : "simple sleeping bag",  price :  3599.99, qty : 1, onSale : true},
+                            { id :  8, category : "sleeping bag", description : "deluxe sleeping bag",  price :  4999.99, qty : 1 },
+                            { id :  9, category : "tent",         description : "1-person tent",        price : 699.99, qty : 1 },
+                            { id : 10, category : "tent",         description : "2-person tent",        price : 899.99, qty : 1 },
+                            { id : 11, category : "tent",         description : "3-person tent",        price : 999.99, qty : 1 },
+                            { id : 12, category : "tent",         description : "4-person tent",        price : 1199.99, qty : 1 }
+            ];
+  
+  
+            $scope.cart = [];
+
+            // Find the element from the table
+            var findItemById = function(items, id) {
+            
+                return _.find(items, function(item) {
+                    return item.id === id;
+                });
+
+            };
+  
+            // Calculate the cost
+            $scope.getCost = function(item) {
+
+                return item.qty * item.price;
+
+            };
+
+            // Display the item to UI
+            $scope.addItem = function(itemToAdd) {
+    
+                var found = findItemById($scope.cart, itemToAdd.id);
+                if (found) {
+                    found.qty += itemToAdd.qty;
+                }
+                else {
+                    $scope.cart.push(angular.copy(itemToAdd));
+                }
+            };
+  
+            // Calculate the total of the cart
+            $scope.getTotal = function() {
+    
+                var total =  _.reduce($scope.cart, function(sum, item) {
+                
+                    return sum + $scope.getCost(item);
+
+                }, 0);
+
+                console.log('total: ' + total);
+                return total;
+
+            };
+
+            // Remove an item from the UI
+            $scope.removeItem = function(item) {
+                
+                var index = $scope.cart.indexOf(item);
+                $scope.cart.splice(index, 1);
+
+            };
+  
+            // Clear the UI
+            $scope.clearCart = function() {
+
+                $scope.cart.length = 0;
+            
+            };
+  
+        });
+
+    </script>
+</html>
